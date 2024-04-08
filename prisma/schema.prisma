@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id             Int       @id @default(autoincrement())
+  firstName      String    @db.VarChar(15)
+  lastName       String    @db.VarChar(15)
+  middleName     String    @db.VarChar(15)
+  passportSeries Int
+  passportNumber Int
+  dateOfBirth    String    @db.VarChar(10)
+  phoneNumber    String    @unique @db.VarChar(10)
+  photoUrl       String
+  dateAbonement  DateTime  @default(now())
+  trainers       shedule[]
+}
+
+model Trainer {
+  id             Int       @id @default(autoincrement())
+  firstName      String    @db.VarChar(15)
+  lastName       String    @db.VarChar(15)
+  middleName     String    @db.VarChar(15)
+  passportSeries Int
+  passportNumber Int
+  dateOfBirth    String    @db.VarChar(10)
+  phoneNumber    String    @unique @db.VarChar(10)
+  photoUrl       String
+  clients        shedule[]
+}
+
+model shedule {
+  id        Int      @id @default(autoincrement())
+  client    Client   @relation(fields: [clientId], references: [id])
+  clientId  Int
+  trainer   Trainer  @relation(fields: [trainerId], references: [id])
+  trainerId Int
+  date      DateTime
+}
+
+model inventory {
+  id          Int    @id @default(autoincrement())
+  name        String @db.VarChar(50)
+  description String @db.VarChar(300)
+  count       Int
+}
+
+model account {
+  id       Int    @id @default(autoincrement())
+  role     Int
+  login    String
+  password String
+}
