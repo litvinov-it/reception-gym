@@ -88,5 +88,7 @@ export async function PUT(
     data: data,
   });
 
+  console.log(updatedClient)
+
   return NextResponse.json(updatedClient);
 }

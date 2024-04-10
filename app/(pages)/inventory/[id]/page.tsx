@@ -1,5 +1,5 @@
 "use client";
-import Input from "@/app/components/input/input";
+import Input from "@/app/components/ui/input/input";
 import {
   IInputInventory,
   IInventory,

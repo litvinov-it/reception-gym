@@ -1,7 +1,9 @@
 import { IClient } from "@/app/schemas/clients/ClientTypes";
 import { IShedule } from "@/app/schemas/shedule/InventoryTypes";
 import { ITrainer } from "@/app/schemas/trainers/TrainerTypes";
-import { formatDate } from "@/app/utils/formatDate";
+import { CLIENT_API } from "@/app/utils/client-api/clients-api";
+import { TRAINERS_API } from "@/app/utils/client-api/trainers-api";
+import { formatDate } from "@/app/utils/date/formatDate";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
@@ -15,27 +17,24 @@ const SheduleRow = ({ item, removeShedule }: IProps) => {
   const [trainer, setTrainer] = useState<ITrainer>();
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/clients/${item.clientId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) return window.alert("Неизвестная ошибка на сервере");
-        setClient(data);
-      });
-
-    fetch(`http://localhost:3000/api/trainers/${item.trainerId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) return window.alert("Неизвестная ошибка на сервере");
-        setTrainer(data);
-      });
+    CLIENT_API.GET(String(item.clientId)).then((data) => {
+      setClient(data as IClient);
+    })
+    TRAINERS_API.GET(String(item.trainerId)).then((data) => {
+      setTrainer(data as ITrainer);
+    })
   }, []);
 
   return (
     <tr>
+      {/* клиент */}
       <th>{client?.firstName + " " + client?.lastName}</th>
+      {/* тренер */}
       <th>{trainer?.firstName + " " + trainer?.lastName}</th>
+      {/* дата */}
       <th>{formatDate(item.date)}</th>
-      <td>
+      {/* Действия */}
+      <td className="flex gap-2">
         <Link className="btn btn-ghost btn-xs" href={`/shedule/${item.id}`}>
           редактировать
         </Link>

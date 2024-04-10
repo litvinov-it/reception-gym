@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import Input from "@/app/components/input/input";
+import Input from "@/app/components/ui/input/input";
 import {
   ClientFields,
   IClient,
@@ -10,7 +10,8 @@ import {
 } from "@/app/schemas/clients/ClientTypes";
 import { clientSchema } from "@/app/schemas/clients/validation-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { generateValueInputDate } from "@/app/utils/generateValueInputDate";
+import InputRange from "@/app/components/ui/input-range/input-range";
+import { CLIENT_API } from "@/app/utils/client-api/clients-api";
 
 interface IProps {
   params: {
@@ -19,49 +20,97 @@ interface IProps {
 }
 
 const Page = ({ params: { id } }: IProps) => {
+  // Инициализация переменных
   const [client, setClient] = useState<IClient | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Обновление данных
   const refreshClient = async () => {
+    // Получение данных
     setLoading(true);
-    const res = await fetch("http://localhost:3000/api/clients/" + id);
-    const client: IClient = await res.json();
+    const client = await CLIENT_API.GET(id).then((data) => data as IClient);
     setClient(client);
     setLoading(false);
+
+    // Костыльная нициализация некоторых данных для формы
+    setValue("dateAbonement", new Date(client?.dateAbonement || Date.now()));
+    setValue("photoUrl", client!.photoUrl);
   };
 
+  // Инициализация данных
   useEffect(() => {
     refreshClient();
   }, []);
 
+  // Переменные формы
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<TClientForm>({
     resolver: zodResolver(clientSchema),
   });
 
+  // Получение ошибок
   const getError = (nameInput: ClientFields) => errors[nameInput];
 
+  // Отправка данных
   const onSubmit: SubmitHandler<TClientForm> = (data) => {
-    fetch("http://localhost:3000/api/clients/" + id, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+    CLIENT_API.UPDATE(data, client!.id, () => {
+      window.alert("Клиент успешно обновлен");
     })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        if (data.error)
-          return window.alert("Произошла ошибка при изменении клиента");
-        window.alert("Данные обновлены успешно");
-      });
   };
 
+  const rangeValues = [0, 1, 3, 6, 12];
+  const handleChangeRange = (value: number) => {
+    // value 0 = ничего не меняем
+    // value 25 = увеличиваем на 1 месяц
+    // value 50 = увеличиваем на 3 месяца
+    // value 75 = увеличиваем на 6 месяцев
+    // value 100 = увеличиваем на 12 месяцев
+
+    // Инициализация даты
+    let date = new Date(client!.dateAbonement || Date.now());
+
+    // Если значение 0, то ничего не делаем
+    if (value === 0) return;
+
+    // Если значение 25, то увеличиваем дату на 1 месяц
+    if (value === 25) {
+      let oneMonthLater = new Date(date);
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+      date = oneMonthLater;
+    }
+
+    // Если значение 50, то увеличиваем дату на 3 месяца
+    if (value === 50) {
+      let threeMonthsLater = new Date(date);
+      threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+      date = threeMonthsLater;
+    }
+
+    // Если значение 75, то увеличиваем дату на 6 месяцев
+    if (value === 75) {
+      let sixMonthsLater = new Date(date);
+      sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+      date = sixMonthsLater;
+    }
+
+    // Если значение 100, то увеличиваем дату на 12 месяцев
+    if (value === 100) {
+      let twelveMonthsLater = new Date(date);
+      twelveMonthsLater.setMonth(twelveMonthsLater.getMonth() + 12);
+      date = twelveMonthsLater;
+    }
+
+    // Изменение даты абонемента
+    setValue("dateAbonement", new Date(date));
+  };
+
+  // Инициализация инпутов
   const inputsItems: IInputClient[] = [
+    // Имя
     {
       label: "Имя",
       type: "text",
@@ -71,6 +120,7 @@ const Page = ({ params: { id } }: IProps) => {
       defaultValue: client?.firstName,
       errorName: "firstName",
     },
+    // Фамилия
     {
       label: "Фамилия",
       type: "text",
@@ -80,6 +130,7 @@ const Page = ({ params: { id } }: IProps) => {
       defaultValue: client?.lastName,
       errorName: "lastName",
     },
+    // Отчество
     {
       label: "Отчество",
       type: "text",
@@ -89,6 +140,7 @@ const Page = ({ params: { id } }: IProps) => {
       defaultValue: client?.middleName,
       errorName: "middleName",
     },
+    // Дата рождения
     {
       label: "День рождения",
       type: "text",
@@ -98,6 +150,7 @@ const Page = ({ params: { id } }: IProps) => {
       defaultValue: client?.dateOfBirth,
       errorName: "dateOfBirth",
     },
+    // Серия паспорта
     {
       label: "Серия паспорта",
       type: "number",
@@ -107,6 +160,7 @@ const Page = ({ params: { id } }: IProps) => {
       defaultValue: client?.passportSeries,
       errorName: "passportSeries",
     },
+    // Номер паспорта
     {
       label: "Номер паспорта",
       type: "number",
@@ -116,6 +170,7 @@ const Page = ({ params: { id } }: IProps) => {
       defaultValue: client?.passportNumber,
       errorName: "passportNumber",
     },
+    // Номер телефона
     {
       label: "Номер телефона",
       type: "string",
@@ -125,28 +180,12 @@ const Page = ({ params: { id } }: IProps) => {
       defaultValue: client?.phoneNumber,
       errorName: "phoneNumber",
     },
-    {
-      label: "Фото",
-      type: "text",
-      register: {
-        ...register("photoUrl"),
-      },
-      defaultValue: client?.photoUrl,
-      errorName: "photoUrl",
-    },
-    {
-      label: "Абонемент до",
-      type: "date",
-      register: {
-        ...register("dateAbonement", { valueAsDate: true }),
-      },
-      defaultValue: generateValueInputDate(client?.dateAbonement),
-      errorName: "dateAbonement",
-    },
   ];
 
+  // При загрузке
   if (loading) return <p className="text-center mt-4">Загрузка...</p>;
 
+  // Форма
   return (
     <div className="w-1/2 mx-auto m-4">
       <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
@@ -160,6 +199,12 @@ const Page = ({ params: { id } }: IProps) => {
             error={getError(input.errorName)}
           />
         ))}
+        <InputRange
+          label="Продление абонемента на:"
+          defaultValue={0}
+          values={rangeValues}
+          onChange={handleChangeRange}
+        />
         <button className="btn">Сохранить</button>
       </form>
     </div>

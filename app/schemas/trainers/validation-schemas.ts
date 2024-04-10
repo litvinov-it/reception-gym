@@ -37,5 +37,15 @@ export const trainerSchema = z.object({
     .min(10, ERRORS_TRAINER_SCHEME.PHONE_NUMBER.min)
     .max(10, ERRORS_TRAINER_SCHEME.PHONE_NUMBER.max),
 
-  photoUrl: z.string(ERRORS_TRAINER_SCHEME.PHOTO_URL.string).min(1, ERRORS_TRAINER_SCHEME.PHOTO_URL.min),
+  photoUrl: z
+    .string(ERRORS_TRAINER_SCHEME.PHOTO_URL.string)
+    .min(1, ERRORS_TRAINER_SCHEME.PHOTO_URL.min),
 });
+
+export const trainerSchemaCreateForm = trainerSchema
+  .omit({
+    photoUrl: true,
+  })
+  .extend({
+    file: z.instanceof(FormData),
+  });

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Navbar from "./components/navbar/navbar";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import AuthProvider from "./components/auth-provider/auth-provider";
+import CheckAuth from "./chechAuth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,8 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="business">
       <body className={inter.className}>
-        <Navbar pathname={"/"} />
-        {children}
+        <AuthProvider>
+          <CheckAuth>
+            <Navbar pathname={"/"} />
+            {children}
+          </CheckAuth>
+        </AuthProvider>
       </body>
     </html>
   );

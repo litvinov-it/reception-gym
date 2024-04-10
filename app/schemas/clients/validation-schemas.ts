@@ -37,7 +37,17 @@ export const clientSchema = z.object({
     .min(10, ERRORS_CLIENT_SCHEME.PHONE_NUMBER.min)
     .max(10, ERRORS_CLIENT_SCHEME.PHONE_NUMBER.max),
 
-  photoUrl: z.string(ERRORS_CLIENT_SCHEME.PHOTO_URL.string).min(1, ERRORS_CLIENT_SCHEME.PHOTO_URL.min),
+  photoUrl: z
+    .string(ERRORS_CLIENT_SCHEME.PHOTO_URL.string)
+    .min(1, ERRORS_CLIENT_SCHEME.PHOTO_URL.min),
 
   dateAbonement: z.date(ERRORS_CLIENT_SCHEME.DATE_ABONEMENT.date).optional(),
 });
+
+export const clientSchemaCreateForm = clientSchema
+  .omit({
+    photoUrl: true,
+  })
+  .extend({
+    file: z.instanceof(FormData),
+  });

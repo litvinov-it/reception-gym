@@ -1,31 +1,44 @@
 import { IClient } from "@/app/schemas/clients/ClientTypes";
+import formatPhoneNumber from "@/app/utils/formatPhoneNumber";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 interface IProps {
   user: IClient;
-  removeUser: (id: number) => void;
   userType: string;
+  removeUser: (id: number) => void;
 }
 
-const TableRow = ({ user, removeUser, userType }: IProps) => {
+const TableRow = ({ user, userType, removeUser }: IProps) => {
+  const abonementActive = user.dateAbonement && new Date() < new Date(user.dateAbonement);
+
+  //
   const abonementIsActive = () => {
     if (!user.dateAbonement) return false;
     return new Date() < new Date(user.dateAbonement);
   };
+
   return (
     <tr>
+      {/* аватар, ФИО */}
       <td>
         <div className="flex items-center gap-3">
           <div className="avatar">
             <div className="mask mask-squircle w-12 h-12">
-              <img src={user.photoUrl} alt="Avatar" />
+              <Image
+                src={`/images/${user.photoUrl}`}
+                alt="Avatar"
+                width={120}
+                height={120}
+                priority={true}
+              />
             </div>
           </div>
           <div>
             <div className="font-bold">
               {user.lastName} {user.firstName}
-              {abonementIsActive() && (
+              {abonementActive && (
                 <span className="badge badge-success ml-4">Активен</span>
               )}
             </div>
@@ -33,14 +46,23 @@ const TableRow = ({ user, removeUser, userType }: IProps) => {
           </div>
         </div>
       </td>
+
+      {/* телефон */}
+      <td>{formatPhoneNumber(user.phoneNumber)}</td>
+
+      {/* паспорт */}
       <td>
         {user.passportSeries} {user.passportNumber}
       </td>
+
+      {/* дата рождения */}
       <td>{user.dateOfBirth}</td>
+
+      {/* Действия */}
       <th>
         <Link
+          href={`/clients/${user.id}`}
           className="btn btn-ghost btn-xs mr-2"
-          href={`/${userType}/${user.id}`}
         >
           редактировать
         </Link>

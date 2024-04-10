@@ -1,42 +1,94 @@
 "use client";
 import React, { useMemo } from "react";
-import Input from "@/app/components/input/input";
+import Input from "@/app/components/ui/input/input";
 import { SubmitHandler, useForm as useFormHook } from "react-hook-form";
-import { Inputs } from "@/app/models/inputsTrainers";
-import { IInput } from "@/app/models/input";
+import {
+  IInputTrainer,
+  TrainerFields,
+  TTrainerForm,
+} from "@/app/schemas/trainers/TrainerTypes";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { trainerSchemaCreateForm } from "@/app/schemas/trainers/validation-schemas";
+import { IMAGE_API } from "@/app/utils/client-api/image-api";
+import { TRAINERS_API } from "@/app/utils/client-api/trainers-api";
 
 const Page = () => {
+  // Инициализация формы
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useFormHook<Inputs>();
+    setValue,
+  } = useFormHook<TTrainerForm>({
+    resolver: zodResolver(trainerSchemaCreateForm),
+  });
 
-  const getError = (nameInput: keyof Inputs) => errors[nameInput];
+  const getError = (nameInput: TrainerFields) => errors[nameInput];
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    fetch("http://localhost:3000/api/trainers", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then(() => window.alert("Тренер добавлен успешно"))
-      .catch((e) => window.alert("Тренер не добавлен: " + e.message));
+  const onSubmit: SubmitHandler<TTrainerForm> = (data) => {
+
+    // Загрузка фото
+    IMAGE_API.UPLOAD(data.file).then((fileName) => {
+      // Формирование данных
+      const finalData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        middleName: data.middleName,
+        dateOfBirth: data.dateOfBirth,
+        passportSeries: data.passportSeries,
+        passportNumber: data.passportNumber,
+        phoneNumber: data.phoneNumber,
+        photoUrl: fileName,
+      };
+
+      // Отправка данных
+      TRAINERS_API.POST(finalData, () => {
+        window.alert("Клиент добавлен успешно");
+      });
+    });
+
+    // fetch("/api/image/upload", {
+    //   method: "POST",
+    //   body: data.file,
+    // })
+    //   .then((response) => response.json())
+    //   .then((response) => {
+    //     const finalData = {
+    //       firstName: data.firstName,
+    //       lastName: data.lastName,
+    //       middleName: data.middleName,
+    //       dateOfBirth: data.dateOfBirth,
+    //       passportSeries: data.passportSeries,
+    //       passportNumber: data.passportNumber,
+    //       phoneNumber: data.phoneNumber,
+    //       photoUrl: response,
+    //     };
+
+    //     fetch("http://localhost:3000/api/trainers", {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //       body: JSON.stringify(finalData),
+    //     })
+    //       .then((res) => res.json())
+    //       .then((data) => {
+    //         if (data.errors)
+    //           return window.alert("Произошла ошибка при добавлении тренера");
+    //         window.alert("Тренер добавлен успешно");
+    //       });
+    //   })
+    //   .catch((error) => console.error("Ошибка загрузки файла:", error));
+
   };
 
-  const inputsItems: IInput[] = useMemo(() => {
+  const inputsItems: IInputTrainer[] = useMemo(() => {
     return [
       {
         label: "Имя",
         type: "text",
         register: {
-          ...register("firstName", {
-            required: "Обязательное поле",
-            minLength: { value: 3, message: "Минимум 3 символа" },
-            maxLength: { value: 15, message: "Максимум 15 символов" },
-          }),
+          ...register("firstName"),
         },
         defaultValue: "",
         errorName: "firstName",
@@ -45,11 +97,7 @@ const Page = () => {
         label: "Фамилия",
         type: "text",
         register: {
-          ...register("lastName", {
-            required: "Обязательное поле",
-            minLength: { value: 3, message: "Минимум 3 символа" },
-            maxLength: { value: 15, message: "Максимум 15 символов" },
-          }),
+          ...register("lastName"),
         },
         defaultValue: "",
         errorName: "lastName",
@@ -58,11 +106,7 @@ const Page = () => {
         label: "Отчество",
         type: "text",
         register: {
-          ...register("middleName", {
-            required: "Обязательное поле",
-            minLength: { value: 3, message: "Минимум 3 символа" },
-            maxLength: { value: 15, message: "Максимум 15 символов" },
-          }),
+          ...register("middleName"),
         },
         defaultValue: "",
         errorName: "middleName",
@@ -71,13 +115,7 @@ const Page = () => {
         label: "День рождения",
         type: "text",
         register: {
-          ...register("dateOfBirth", {
-            required: "Обязательное поле",
-            pattern: {
-              value: /^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.\d{4}$/,
-              message: "Пожалуйста, введите дату в формате DD.MM.YYYY",
-            },
-          }),
+          ...register("dateOfBirth"),
         },
         defaultValue: "",
         errorName: "dateOfBirth",
@@ -86,11 +124,7 @@ const Page = () => {
         label: "Серия паспорта",
         type: "number",
         register: {
-          ...register("passportSeries", {
-            required: "Обязательное поле",
-            minLength: { value: 4, message: "Минимум 4 символа" },
-            maxLength: { value: 4, message: "Максимум 4 символа" },
-          }),
+          ...register("passportSeries", { valueAsNumber: true }),
         },
         defaultValue: "",
         errorName: "passportSeries",
@@ -99,11 +133,7 @@ const Page = () => {
         label: "Номер паспорта",
         type: "number",
         register: {
-          ...register("passportNumber", {
-            required: "Обязательное поле",
-            minLength: { value: 6, message: "Минимум 6 символа" },
-            maxLength: { value: 6, message: "Максимум 6 символа" },
-          }),
+          ...register("passportNumber", { valueAsNumber: true }),
         },
         defaultValue: "",
         errorName: "passportNumber",
@@ -112,23 +142,10 @@ const Page = () => {
         label: "Номер телефона",
         type: "number",
         register: {
-          ...register("phoneNumber", {
-            required: "Обязательное поле",
-            minLength: { value: 10, message: "Минимум 10 символов" },
-            maxLength: { value: 10, message: "Максимум 10 символов" },
-          }),
+          ...register("phoneNumber"),
         },
         defaultValue: "",
         errorName: "phoneNumber",
-      },
-      {
-        label: "Фото",
-        type: "text",
-        register: {
-          ...register("photoUrl", { required: "Обязательное поле" }),
-        },
-        defaultValue: "",
-        errorName: "photoUrl",
       },
     ];
   }, [errors, register]);
@@ -146,6 +163,21 @@ const Page = () => {
             error={getError(input.errorName)}
           />
         ))}
+        {errors.file && <p className="text-red-500">{errors.file.message}</p>}
+        <input
+          type="file"
+          className="file-input w-full max-w-xs"
+          multiple={false}
+          accept=".jpg, .jpeg, .png"
+          onChange={(e) => {
+            const file = e.target.files ? e.target.files[0] : null;
+            if (file) {
+              const formData = new FormData();
+              formData.append("file", file);
+              setValue("file", formData);
+            }
+          }}
+        />
         <button className="btn">Сохранить</button>
       </form>
     </div>

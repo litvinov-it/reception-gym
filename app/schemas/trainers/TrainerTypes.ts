@@ -3,7 +3,9 @@ import { trainerSchema } from "./validation-schemas";
 
 export type TrainerTypes = z.infer<typeof trainerSchema>;
 export type TrainerFields = keyof TrainerTypes;
-export type TTrainerForm = TrainerTypes;
+export interface TTrainerForm extends TrainerTypes {
+    file: FormData;
+  }
 
 export interface ITrainer extends TrainerTypes {
     id: number;

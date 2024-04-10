@@ -1,13 +1,19 @@
 "use client";
-import Input from "@/app/components/input/input";
+import Input from "@/app/components/ui/input/input";
+import { IClient } from "@/app/schemas/clients/ClientTypes";
 import {
   IInputShedule,
   IShedule,
   SheduleFields,
   TSheduleForm,
 } from "@/app/schemas/shedule/InventoryTypes";
-import { formatDate } from "@/app/utils/formatDate";
-import { generateValueInputDate } from "@/app/utils/generateValueInputDate";
+import { sheduleSchema } from "@/app/schemas/shedule/validation-schemas";
+import { ITrainer } from "@/app/schemas/trainers/TrainerTypes";
+import { CLIENT_API } from "@/app/utils/client-api/clients-api";
+import { SHEDULE_API } from "@/app/utils/client-api/shedule-api";
+import { TRAINERS_API } from "@/app/utils/client-api/trainers-api";
+import { generateValueInputDate } from "@/app/utils/date/generateValueInputDate";
+import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -18,51 +24,57 @@ interface IProps {
 }
 
 const Page = ({ params: { id } }: IProps) => {
+  // инициализация состояний
   const [shedule, setShedule] = useState<IShedule | null>(null);
+  const [client, setClient] = useState<IClient | null>(null);
+  const [trainer, setTrainer] = useState<ITrainer | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // функция обновления данных
   const refreshShedule = async () => {
     setLoading(true);
-    const res = await fetch("http://localhost:3000/api/shedule/" + id);
-    const shedule: IShedule = await res.json();
-    setShedule(shedule);
+    const data = await SHEDULE_API.GET(id).then((data) => data as IShedule)
+    const client = await CLIENT_API.GET(String(data.clientId)).then((data) => data as IClient)
+    const trainer = await TRAINERS_API.GET(String(data.trainerId)).then((data) => data as ITrainer)
+    setShedule(data);
+    setClient(client);
+    setTrainer(trainer);
     setLoading(false);
+
+    // костыльная инициализация данных
+    setValue("clientId", data.clientId)
+    setValue("trainerId", data.trainerId) 
   };
 
+  // при загрузке
   useEffect(() => {
     refreshShedule();
   }, []);
 
+  // данные формы
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<TSheduleForm>();
+    setValue
+  } = useForm<TSheduleForm>({
+    resolver: zodResolver(sheduleSchema),
+  });
 
+  // получение ошибок
   const getError = (nameInput: SheduleFields) => errors[nameInput];
 
+  // отправка формы
   const onSubmit: SubmitHandler<TSheduleForm> = (data) => {
-    console.log(data.date);
-    fetch("http://localhost:3000/api/shedule/" + id, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          return window.alert("Произошла ошибка при изменении расписания");
-        }
-
-        window.alert("Данные обновлены успешно");
-      });
+    SHEDULE_API.UPDATE(data, id, () => {
+      setShedule(data as IShedule);
+      window.alert("Расписание успешно обновлено");
+    });
   };
 
   const inputsItems: IInputShedule[] = [
     {
-      type: "date",
+      type: "datetime-local",
       label: "Дата",
       errorName: "date",
       register: register("date", { valueAsDate: true, required: true }),
@@ -85,6 +97,16 @@ const Page = ({ params: { id } }: IProps) => {
             error={getError(input.errorName)}
           />
         ))}
+        
+        {/* client */}
+        <span className="label-text">{"Клиент: "}</span>
+        <input type="text" className="input input-bordered w-full" value={client?.firstName + " " + client?.lastName} disabled />
+
+        {/* trainer */}
+        <span className="label-text">{"Тренер: "}</span>
+        <input type="text" className="input input-bordered w-full" value={trainer?.firstName + " " + trainer?.lastName} disabled />
+
+        {/* save */}
         <button type="submit" className="btn">
           Сохранить
         </button>

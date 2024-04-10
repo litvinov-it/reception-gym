@@ -50,9 +50,10 @@ model inventory {
   count       Int
 }
 
-model account {
-  id       Int    @id @default(autoincrement())
-  role     Int
-  login    String
-  password String
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  hashedPassword String
+  name           String
+  registeredAt   DateTime @default(now())
 }

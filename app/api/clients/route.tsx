@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clientSchema } from "@/app/schemas/clients/validation-schemas";
 import prisma from "@/prisma/client";
-import path from "path";
-import fs from "fs";
-import { pipeline } from 'stream/promises';
 
 export async function GET(req: NextRequest) {
   const clients = await prisma.client.findMany();

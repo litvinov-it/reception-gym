@@ -17,6 +17,7 @@ const SheduleTable = ({ sheduleList, removeShedule }: IProps) => {
             <th>Клиент</th>
             <th>Тренер</th>
             <th>Дата</th>
+            <th>Действия</th>
           </tr>
         </thead>
 

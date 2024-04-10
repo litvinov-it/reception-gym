@@ -1,64 +1,70 @@
 "use client";
 import React, { useMemo } from "react";
-import Input from "@/app/components/input/input";
+import Input from "@/app/components/ui/input/input";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { clientSchema } from "@/app/schemas/clients/validation-schemas";
 import {
   ClientFields,
   IInputClient,
   TClientForm,
 } from "@/app/schemas/clients/ClientTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { IMAGE_API } from "@/app/utils/client-api/image-api";
+import { CLIENT_API } from "@/app/utils/client-api/clients-api";
+import { clientSchemaCreateForm } from "@/app/schemas/clients/validation-schemas";
 
 const Page = () => {
+  // Инициализация формы
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
   } = useForm<TClientForm>({
-    resolver: zodResolver(
-      clientSchema
-        .omit({
-          photoUrl: true,
-        })
-        .extend({
-          file: z.instanceof(FormData),
-        })
-    ),
+    resolver: zodResolver(clientSchemaCreateForm),
   });
 
+  // Получение ошибки
   const getError = (nameInput: ClientFields) => errors[nameInput];
 
+  // Обработчик формы
   const onSubmit: SubmitHandler<TClientForm> = (data) => {
+    // Загрузка фото
+    IMAGE_API.UPLOAD(data.file).then((fileName) => {
+      // Формирование данных
+      const finalData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        middleName: data.middleName,
+        dateOfBirth: data.dateOfBirth,
+        passportSeries: data.passportSeries,
+        passportNumber: data.passportNumber,
+        phoneNumber: data.phoneNumber,
+        photoUrl: fileName,
+      };
 
-    fetch("/api/upload", {
-      method: "POST",
-      body: data.file,
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => console.error("Ошибка загрузки файла:", error));
-
-    // fetch("http://localhost:3000/api/clients", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(data),
-    // })
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     if (data.errors) return window.alert("Произошла ошибка при добавлении клиента");
-    //     window.alert("Клиент добавлен успешно")
-    //   })
+      // Отправка данных
+      CLIENT_API.POST(finalData, () => {
+        window.alert("Клиент добавлен успешно");
+      });
+    });
   };
 
+  // Обработчик инпута файла
+  const handleChangeFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file && file.size > 1024 * 1024 * 2) {
+      return window.alert("Размер файла не должен превышать 2 МБ");
+    }
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    setValue("file", formData);
+  };
+
+  // Список полей
   const inputsItems: IInputClient[] = useMemo(() => {
     return [
+      // Имя
       {
         label: "Имя",
         type: "text",
@@ -68,6 +74,7 @@ const Page = () => {
         defaultValue: "",
         errorName: "firstName",
       },
+      // Фамилия
       {
         label: "Фамилия",
         type: "text",
@@ -77,6 +84,7 @@ const Page = () => {
         defaultValue: "",
         errorName: "lastName",
       },
+      // Отчество
       {
         label: "Отчество",
         type: "text",
@@ -86,6 +94,7 @@ const Page = () => {
         defaultValue: "",
         errorName: "middleName",
       },
+      // День рождения
       {
         label: "День рождения",
         type: "text",
@@ -100,6 +109,7 @@ const Page = () => {
         defaultValue: "",
         errorName: "dateOfBirth",
       },
+      // Паспорт
       {
         label: "Серия паспорта",
         type: "number",
@@ -111,6 +121,7 @@ const Page = () => {
         defaultValue: "",
         errorName: "passportSeries",
       },
+      // Номер паспорта
       {
         label: "Номер паспорта",
         type: "number",
@@ -120,6 +131,7 @@ const Page = () => {
         defaultValue: "",
         errorName: "passportNumber",
       },
+      // Номер телефона
       {
         label: "Номер телефона",
         type: "string",
@@ -145,48 +157,19 @@ const Page = () => {
             error={getError(input.errorName)}
           />
         ))}
-        {errors.file && <p className="text-red-500">{errors.file.message}</p>}
         <input
           type="file"
           className="file-input w-full max-w-xs"
           multiple={false}
           accept=".jpg, .jpeg, .png"
-          onChange={(e) => {
-            const file = e.target.files ? e.target.files[0] : null;
-            if (file) {
-              const formData = new FormData();
-              formData.append("file", file);
-              setValue("file", formData);
-            }
-          }}
+          onChange={handleChangeFile}
         />
-        <button className="btn">Сохранить</button>
+        <button type="submit" className="btn">
+          Сохранить
+        </button>
       </form>
     </div>
   );
 };
 
 export default Page;
-
-{
-  /* <input
-  type="file"
-  onChange={(e) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-
-    fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        // Сохраните путь к файлу в состоянии или отправьте на сервер для сохранения в базе данных
-      })
-      .catch((error) => console.error("Ошибка загрузки файла:", error));
-  }}
-/> */
-}
-
-// // app/api/upload.ts

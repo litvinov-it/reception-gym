@@ -1,10 +1,17 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import Input from "@/app/components/input/input";
-import { Inputs } from "@/app/models/inputsTrainers";
-import { IInput } from "@/app/models/input";
-import { ITrainer } from "@/app/models/trainer";
+import Input from "@/app/components/ui/input/input";
+import {
+  IInputTrainer,
+  ITrainer,
+  TrainerFields,
+  TrainerTypes,
+  TTrainerForm,
+} from "@/app/schemas/trainers/TrainerTypes";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { trainerSchema } from "@/app/schemas/trainers/validation-schemas";
+import { TRAINERS_API } from "@/app/utils/client-api/trainers-api";
 
 interface IProps {
   params: {
@@ -13,57 +20,54 @@ interface IProps {
 }
 
 const Page = ({ params: { id } }: IProps) => {
+  // Инициализация состояния
   const [trainer, setTrainer] = useState<ITrainer | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Обновление тренера
   const refreshTrainer = async () => {
+    // Получение данных
     setLoading(true);
-    const res = await fetch("http://localhost:3000/api/trainers/" + id);
-    const trainer: ITrainer = await res.json();
+    const trainer = await TRAINERS_API.GET(id).then((data) => data as ITrainer);
     setTrainer(trainer);
     setLoading(false);
+
+    // Костыльная нициализация некоторых данных для формы
+    setValue("photoUrl", trainer!.photoUrl);
   };
 
+  // Инициализация тренера
   useEffect(() => {
     refreshTrainer();
   }, []);
 
+  // Инициализация формы
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Inputs>();
+    setValue,
+  } = useForm<TTrainerForm>({
+    resolver: zodResolver(trainerSchema), 
+  });
 
-  const getError = (nameInput: keyof Inputs) => errors[nameInput];
+  // Получение ошибки
+  const getError = (nameInput: TrainerFields) => errors[nameInput];
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    // const finalData: Inputs = {
-    //   ...data,
-    //   phoneNumber: data.phoneNumber.replace(/\D/g, "").slice(1),
-    // };
-
-    fetch("http://localhost:3000/api/trainers/" + id, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+  // Обработчик формы
+  const onSubmit: SubmitHandler<TTrainerForm> = (data) => {
+    TRAINERS_API.UPDATE(data, trainer!.id, () => {
+      window.alert("Клиент успешно обновлен");
     })
-      .then((res) => res.json())
-      .then((res) => window.alert(`Данные обновлены успешно ${res.firstName}`))
-      .catch((e) => window.alert("Данные не обновлены: " + e.message));
   };
 
-  const inputsItems: IInput[] = [
+  // Список полей
+  const inputsItems: IInputTrainer[] = [
     {
       label: "Имя",
       type: "text",
       register: {
-        ...register("firstName", {
-          required: "Обязательное поле",
-          minLength: { value: 3, message: "Минимум 3 символа" },
-          maxLength: { value: 15, message: "Максимум 15 символов" },
-        }),
+        ...register("firstName"),
       },
       defaultValue: trainer?.firstName,
       errorName: "firstName",
@@ -72,11 +76,7 @@ const Page = ({ params: { id } }: IProps) => {
       label: "Фамилия",
       type: "text",
       register: {
-        ...register("lastName", {
-          required: "Обязательное поле",
-          minLength: { value: 3, message: "Минимум 3 символа" },
-          maxLength: { value: 15, message: "Максимум 15 символов" },
-        }),
+        ...register("lastName"),
       },
       defaultValue: trainer?.lastName,
       errorName: "lastName",
@@ -85,11 +85,7 @@ const Page = ({ params: { id } }: IProps) => {
       label: "Отчество",
       type: "text",
       register: {
-        ...register("middleName", {
-          required: "Обязательное поле",
-          minLength: { value: 3, message: "Минимум 3 символа" },
-          maxLength: { value: 15, message: "Максимум 15 символов" },
-        }),
+        ...register("middleName"),
       },
       defaultValue: trainer?.middleName,
       errorName: "middleName",
@@ -98,9 +94,7 @@ const Page = ({ params: { id } }: IProps) => {
       label: "День рождения",
       type: "text",
       register: {
-        ...register("dateOfBirth", {
-          required: "Обязательное поле",
-        }),
+        ...register("dateOfBirth"),
       },
       defaultValue: trainer?.dateOfBirth,
       errorName: "dateOfBirth",
@@ -109,11 +103,7 @@ const Page = ({ params: { id } }: IProps) => {
       label: "Серия паспорта",
       type: "number",
       register: {
-        ...register("passportSeries", {
-          required: "Обязательное поле",
-          minLength: { value: 4, message: "Минимум 4 символа" },
-          maxLength: { value: 4, message: "Максимум 4 символа" },
-        }),
+        ...register("passportSeries", { valueAsNumber: true }),
       },
       defaultValue: trainer?.passportSeries,
       errorName: "passportSeries",
@@ -122,11 +112,7 @@ const Page = ({ params: { id } }: IProps) => {
       label: "Номер паспорта",
       type: "number",
       register: {
-        ...register("passportNumber", {
-          required: "Обязательное поле",
-          minLength: { value: 6, message: "Минимум 6 символа" },
-          maxLength: { value: 6, message: "Максимум 6 символа" },
-        }),
+        ...register("passportNumber", { valueAsNumber: true }),
       },
       defaultValue: trainer?.passportNumber,
       errorName: "passportNumber",
@@ -135,49 +121,22 @@ const Page = ({ params: { id } }: IProps) => {
       label: "Номер телефона",
       type: "string",
       register: {
-        ...register("phoneNumber", {
-          required: "Обязательное поле",
-        }),
+        ...register("phoneNumber"),
       },
-      // mask: [
-      //   "(",
-      //   /[1-9]/,
-      //   /\d/,
-      //   /\d/,
-      //   ")",
-      //   " ",
-      //   /\d/,
-      //   /\d/,
-      //   /\d/,
-      //   "-",
-      //   /\d/,
-      //   /\d/,
-      //   /\d/,
-      //   /\d/
-      // ],
-      // placeholder: "+7 (___) ___-__-__",
       defaultValue: trainer?.phoneNumber,
       errorName: "phoneNumber",
     },
-    {
-      label: "Фото",
-      type: "text",
-      register: {
-        ...register("photoUrl", { required: "Обязательное поле" }),
-      },
-      defaultValue: trainer?.photoUrl,
-      errorName: "photoUrl",
-    },
   ];
 
+  // При загрузке страницы
   if (loading) return <p className="text-center mt-4">Загрузка...</p>;
 
+  // Возврат формы
   return (
     <div className="w-1/2 mx-auto m-4">
       <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
         {inputsItems.map((input) => (
           <Input
-            // mask={input.mask}
             type={input.type}
             key={input.label}
             label={input.label}
