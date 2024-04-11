@@ -1,3 +1,4 @@
+// Декомпозировал ошибки чтобы было проще
 export const ERRORS_SHEDULE_SCHEME = {
   CLIENT_ID: {
     number: {

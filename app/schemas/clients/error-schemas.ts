@@ -1,3 +1,4 @@
+// Декомпозировал ошибки чтобы было проще
 export const ERRORS_CLIENT_SCHEME = {
   FIRST_NAME: {
     string: {

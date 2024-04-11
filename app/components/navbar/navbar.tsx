@@ -8,8 +8,10 @@ interface IProps {
 }
 
 const navbar = ({ pathname }: IProps) => {
+  // получение сессии
   const { status, data: session } = useSession();
 
+  // Отображение навигационной панели
   return (
     <div className="navbar bg-base-300">
       <div className="flex-1">

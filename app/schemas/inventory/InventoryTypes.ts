@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { inventorySchema } from "./validation-schemas";
 
+// Различные типы для TS
+
 export type InventoryTypes = z.infer<typeof inventorySchema>;
 export type TInventoryForm = InventoryTypes;
 export type InventoryFields = keyof InventoryTypes;

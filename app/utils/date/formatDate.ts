@@ -1,3 +1,4 @@
+// Из даты делает строку в формате "часы:минуты день месяц"
 export const formatDate = (itemDate: Date | undefined) => {
     if (!itemDate) return "";
     

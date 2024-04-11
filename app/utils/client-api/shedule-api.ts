@@ -1,21 +1,25 @@
 import { IShedule } from "@/app/schemas/shedule/InventoryTypes";
 
+// Отдельно выделил API для каждой группы роутов для удобства
 class SHEDULE_API_CLASS {
   private path: string;
 
   constructor(path: string) {
+    // path = "http://localhost:3000/api/trainers";
     this.path = path;
   }
 
+  // GET запрос подразумевает что если передали айди - получаем одного пользователя, если не передали - всех
   async GET(
     id?: string,
     callback?: (client: IShedule | IShedule[]) => void
   ): Promise<IShedule | IShedule[]> {
-    if (id) return await this.GET_TRAINER(id, callback);
-    return await this.GET_TRAINERS(callback);
+    if (id) return await this.GET_SHEDULE(id, callback);
+    return await this.GET_SHEDULES(callback);
   }
 
-  private async GET_TRAINER(id: string, callback?: (client: IShedule) => void) {
+  // Получени одного пользователя
+  private async GET_SHEDULE(id: string, callback?: (client: IShedule) => void) {
     return await fetch(this.path + "/" + id)
       .then((res) => res.json())
       .then((data) => {
@@ -25,7 +29,8 @@ class SHEDULE_API_CLASS {
       });
   }
 
-  private async GET_TRAINERS(callback?: (clients: IShedule[]) => void) {
+  // Получение всех пользователей
+  private async GET_SHEDULES(callback?: (clients: IShedule[]) => void) {
     return await fetch(this.path)
       .then((res) => res.json())
       .then((data) => {
@@ -35,6 +40,7 @@ class SHEDULE_API_CLASS {
       });
   }
 
+  // Удаление
   async DELETE(id: number, callback?: (trainer: IShedule) => void) {
     return await fetch(this.path + "/" + id, {
       method: "DELETE",
@@ -47,6 +53,7 @@ class SHEDULE_API_CLASS {
       });
   }
 
+  // Создание
   async POST(data: any, callback?: (client: IShedule) => void) {
     return await fetch(this.path, {
       method: "POST",
@@ -67,6 +74,7 @@ class SHEDULE_API_CLASS {
       });
   }
 
+  // Изменение
   async UPDATE(data: any, id: string, callback?: (client: IShedule) => void) {
     return await fetch(this.path + "/" + id, {
       method: "PUT",
@@ -87,6 +95,7 @@ class SHEDULE_API_CLASS {
   }
 }
 
+// инициализация
 export const SHEDULE_API = new SHEDULE_API_CLASS(
   "http://localhost:3000/api/shedule"
 );

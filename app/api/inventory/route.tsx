@@ -3,7 +3,10 @@ import prisma from "@/prisma/client";
 import { inventorySchema } from "@/app/schemas/inventory/validation-schemas";
 
 export async function GET(request: NextRequest) {
+  // Получаем инвентарь
   const inventory = await prisma.inventory.findMany();
+
+  // Возвращаем инвентарь
   return NextResponse.json(inventory);
 }
 

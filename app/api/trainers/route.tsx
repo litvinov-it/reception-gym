@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Получение тела запроса
   const body = await req.json();
 
   const data = {
@@ -16,6 +17,7 @@ export async function POST(req: NextRequest) {
     passportNumber: parseInt(body.passportNumber),
   };
 
+  // Проверка валидации
   const validation = trainerSchema.safeParse(data);
   if (validation.success === false) {
     return NextResponse.json(
@@ -24,9 +26,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Создание тренера
   const trainer = await prisma.trainer.create({
     data: data,
   });
 
+  // Возврат результата
   return NextResponse.json(trainer);
 }

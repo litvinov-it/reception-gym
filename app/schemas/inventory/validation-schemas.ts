@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ERRORS_INVENTORY_SCHEME } from "./error-schemas";
 
+// Схема валидации для инвентаря
 export const inventorySchema = z.object({
   name: z
     .string(ERRORS_INVENTORY_SCHEME.NAME.string)

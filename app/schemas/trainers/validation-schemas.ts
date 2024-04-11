@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ERRORS_TRAINER_SCHEME } from "./error-schemas";
 
+// Схема валидации для тренера
 export const trainerSchema = z.object({
   firstName: z
     .string(ERRORS_TRAINER_SCHEME.FIRST_NAME.string)
@@ -42,6 +43,7 @@ export const trainerSchema = z.object({
     .min(1, ERRORS_TRAINER_SCHEME.PHOTO_URL.min),
 });
 
+// Схема валидации для формы создания тренера
 export const trainerSchemaCreateForm = trainerSchema
   .omit({
     photoUrl: true,

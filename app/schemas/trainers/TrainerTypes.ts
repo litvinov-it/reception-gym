@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { trainerSchema } from "./validation-schemas";
 
+// Различные типы для TS
+
 export type TrainerTypes = z.infer<typeof trainerSchema>;
 export type TrainerFields = keyof TrainerTypes;
 export interface TTrainerForm extends TrainerTypes {

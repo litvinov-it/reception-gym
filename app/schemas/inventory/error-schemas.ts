@@ -1,3 +1,4 @@
+// Декомпозировал ошибки чтобы было проще
 export const ERRORS_INVENTORY_SCHEME = {
   NAME: {
     string: {

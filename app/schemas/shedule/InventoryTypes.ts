@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { sheduleSchema } from "./validation-schemas";
 
+// Различные типы для TS
+
 export type SheduleTypes = z.infer<typeof sheduleSchema>;
 export type TSheduleForm = SheduleTypes;
 export type SheduleFields = keyof SheduleTypes;

@@ -1,3 +1,4 @@
+// Генерирует из даных сервера дату для инпута (у него там другой формат)
 export const generateValueInputDate = (
   dateAbonement: string | Date | undefined
 ) => {

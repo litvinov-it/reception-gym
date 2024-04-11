@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { clientSchema } from "./validation-schemas";
 
+// Различные типы для TS
+
 export type ClientTypes = z.infer<typeof clientSchema>;
 export interface TClientForm extends ClientTypes {
   file: FormData;

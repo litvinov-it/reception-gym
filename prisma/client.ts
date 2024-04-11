@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 
+// Код для контролирования дублирования подключения к БД (копипастится из проекта в проект)
+
 const prismaClientSingleton = () => {
   return new PrismaClient()
 }

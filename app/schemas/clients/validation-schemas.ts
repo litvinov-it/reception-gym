@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ERRORS_CLIENT_SCHEME } from "./error-schemas";
 
+// Схема клиента для валидации
 export const clientSchema = z.object({
   firstName: z
     .string(ERRORS_CLIENT_SCHEME.FIRST_NAME.string)
@@ -44,6 +45,7 @@ export const clientSchema = z.object({
   dateAbonement: z.date(ERRORS_CLIENT_SCHEME.DATE_ABONEMENT.date).optional(),
 });
 
+// Схема для создания нового клиента
 export const clientSchemaCreateForm = clientSchema
   .omit({
     photoUrl: true,

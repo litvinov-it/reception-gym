@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## reaception-gym
 
-## Getting Started
+Пет проект для опыта работы с новым стеком NextJS
 
-First, run the development server:
+## Задача
+
+Реализовать админ панель для спорт зала с сущностями:
+
+- клиент
+- тренер
+- расписание
+- инвентарь (для инветаризации)
+
+## 🛠 Стек
+
+- NextJS (react + nodeJS)
+- typescript
+- prisma
+- zod
+- tailwind
+- daisyui
+- react-hook-form
+- bcrypt
+
+# Запуск
+
+Создание env файла в корне проекта
+
+```env
+# Postgres для создания БД
+POSTGRES_DB=НАЗВАНИЕ_БАЗЫ_ДАННЫХ
+POSTGRES_USER=ИМЯ_ЮЗЕРА
+POSTGRES_PASSWORD=ПАРОЛЬ
+POSTGRES_HOST=localhost # по умолчанию
+POSTGRES_PORT=5432 # по умолчанию
+
+# PGAdmin для управления БД
+PGADMIN_DEFAULT_EMAIL=ПОЧТА_ПОЛЬЗОВАТЕЛЯ@mail.ru
+PGADMIN_DEFAULT_PASSWORD=ПАРОЛЬ
+PGADMIN_LISTEN_PORT=5050 # по умолчанию
+
+# Prisma для миграций
+DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?schema=public" # по умолчанию
+
+# NextAuth авторизации
+NEXTAUTH_URL="http://localhost:3000" # по умолчанию
+NEXTAUTH_SECRET=ksljjkFkdqnguckskjcitlB # желательно заменить на похожую строку
+```
+
+### Backend
+
+Запускаем контейнеры (необходим docker compose)
+
+```bash
+docker compose up
+```
+
+Делаем миграцию (инициализация сущностей БД)
+
+```bash
+npx prisma migrate dev
+```
+
+Теперь бэк готов к работе
+
+### Frontend
+
+Инициализация бибилиотек
+
+```bash
+npm i
+```
+
+Запуск проекта
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Теперь все работает.
+Можно переходить по http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Регистрация
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Сделана только через api так как в админ панели не стоит делать регистрацию. Можно добавить пользователя через postman:
 
-## Learn More
+```json
+{
+  "name": "danil",
+  "password": "12345",
+  "email": "danil@gmail.com"
+}
+```
+Путь запроса: http://localhost:3000/api/register
 
-To learn more about Next.js, take a look at the following resources:
+# Схема БД
+В папке public/БД.drawio файл в котором накидал схему для БД (в процессе разработки она видоизменилась)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+# Postman

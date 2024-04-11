@@ -1,20 +1,26 @@
 import { ITrainer } from "@/app/schemas/trainers/TrainerTypes";
 
+// Отдельно выделил API для каждой группы роутов для удобства
 class TRAINERS_API_CLASS {
   private path: string;
 
   constructor(path: string) {
+    // path = "http://localhost:3000/api/trainers";
     this.path = path;
   }
 
+  // GET запрос подразумевает что если передали айди - получаем одного пользователя, если не передали - всех
   async GET(
     id?: string,
     callback?: (client: ITrainer | ITrainer[]) => void
   ): Promise<ITrainer | ITrainer[]> {
+    // Если передали айди - получаем одного пользователя
     if (id) return await this.GET_TRAINER(id, callback);
+    // Если не передали айди - получаем всех
     return await this.GET_TRAINERS(callback);
   }
 
+  // Получени одного пользователя
   private async GET_TRAINER(id: string, callback?: (client: ITrainer) => void) {
     return await fetch(this.path + "/" + id)
       .then((res) => res.json())
@@ -25,6 +31,7 @@ class TRAINERS_API_CLASS {
       });
   }
 
+  // Получение всех пользователей
   private async GET_TRAINERS(callback?: (clients: ITrainer[]) => void) {
     return await fetch(this.path)
       .then((res) => res.json())
@@ -35,6 +42,7 @@ class TRAINERS_API_CLASS {
       });
   }
 
+  // Удаление
   async DELETE(id: number, callback?: (trainer: ITrainer) => void) {
     return await fetch(this.path + "/" + id, {
       method: "DELETE",
@@ -47,6 +55,7 @@ class TRAINERS_API_CLASS {
       });
   }
 
+  // Создание
   async POST(data: any, callback?: (client: ITrainer) => void) {
     return await fetch(this.path, {
       method: "POST",
@@ -67,6 +76,7 @@ class TRAINERS_API_CLASS {
       });
   }
 
+  // Обновление
   async UPDATE(data: any, id: number, callback?: (client: ITrainer) => void) {
     return await fetch(this.path + "/" + id, {
       method: "PUT",
@@ -87,6 +97,7 @@ class TRAINERS_API_CLASS {
   }
 }
 
+// Инициализация
 export const TRAINERS_API = new TRAINERS_API_CLASS(
   "http://localhost:3000/api/trainers"
 );
